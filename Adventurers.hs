@@ -74,13 +74,14 @@ crossingT = maximum . map getTimeAdv . getAdventurer
 {-- For a given state of the game, the function presents all changes
 that can be applied to the state together with the time that adventurers
 take to cross the bridge in that change. --}
-changeAllStates :: State -> ListDur State
-changeAllStates = LD . map (\l -> Duration(crossingT l, mChangeState (l ++ [Right()]))) . advComb . advWLantern
+changeAllStates :: State -> ListDur (State -> State)
+changeAllStates = LD . aux . (advComb . advWLantern) where
+  aux x = map (\l -> Duration(crossingT l, mChangeState (l ++ [Right()]))) x
 
 {-- For a given state of the game, the function presents all the
 possible moves that the adventurers can make.  --}
 allValidPlays :: State -> ListDur State
-allValidPlays = changeAllStates <*> return
+allValidPlays s = changeAllStates s <*> return s
 
 {-- For a given number n and initial state, the function calculates
 all possible n-sequences of moves that the adventures can make --}
