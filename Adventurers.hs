@@ -90,44 +90,34 @@ exec 0 s = return s
 exec n s = let l = exec (n-1) s in
    l >>= allValidPlays
 
-
--------------------------------------------- Extra teste 1 ----------------------------------------------------
-check :: Int -> Int -> ListDur State -> Bool
-check 0 t l = False
-check n t (LD []) = False
-check n t l = let l' = remLD $ l >>= allValidPlays in
-   if any (\x -> (getDuration x <= t) && (getValue x == (const True))) l'
-      then True
-      else check (n-1) t $ LD $ filter (\x -> (getDuration x <= t)) l'
-
---------------------------------------------------------------------------------------------------------
-
+-------------------------------------------- Check teste 1 ----------------------------------------------------
+checkleq :: Int -> Int -> ListDur State -> Bool
+checkleq 0 t l = False
+checkleq n t (LD []) = False
+checkleq n t l = let l' = remLD $ l >>= (exec n) in
+  if any (\x -> (getDuration x <= t) && (getValue x == (const True))) l'
+    then True
+    else checkleq (n-1) t l
 
 {-- Is it possible for all adventurers to be on the other side
 in <=17 min and not exceeding 5 moves ? --}
--- To implement
 leq17 :: Bool
-leq17 = check 5 17 $ return gInit
+leq17 = checkleq 5 17 (return gInit)
 
+--------------------------------------------- check teste 2 --------------------------------------------
 
---------------------------------------------- Extra teste 2 --------------------------------------------
+checkl :: Int -> ListDur State -> Bool
+checkl t (LD []) = False
+checkl t l = let l' = remLD $ l >>= allValidPlays in
+  if any (\x -> (getDuration x < t) && (getValue x == (const True))) l'
+    then True
+    else checkl t $ LD $ filter (\x -> (getDuration x < t)) l'
 
-check2 :: Int -> ListDur State -> Bool
-check2 t (LD []) = False
-check2 t l = let l' = remLD $ l >>= allValidPlays in
-   if any (\x -> (getDuration x < t) && (getValue x == (const True))) l'
-      then True
-      else check2 t $ LD $ filter (\x -> (getDuration x < t)) l'
-
---------------------------------------------------------------------------------------------------------
 
 {-- Is it possible for all adventurers to be on the other side
 in < 17 min ? --}
--- To implement
 l17 :: Bool
-l17 = check2 17 $ return gInit
-
-
+l17 = checkl 17 (return gInit)
 --------------------------------------------------------------------------
 -- Implementation of the monad used for the problem of the adventurers.
 
